@@ -37,6 +37,12 @@ class UsageStatsAdapter extends BaseAdapter{
         cal.add(Calendar.DAY_OF_YEAR, -5);
         final List<UsageStats> stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST,
                 cal.getTimeInMillis(), System.currentTimeMillis());
+
+        final int statCount = stats.size();
+
+        for (int i = 0; i < statCount; i++) {
+
+        }
     }
 
     @Override
