@@ -10,7 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.TextView
 import java.util.*
+
 
 class HomeAdapter: BaseAdapter() {
     private val appLabelMap: ArrayMap<String, String> = ArrayMap()
@@ -19,6 +21,7 @@ class HomeAdapter: BaseAdapter() {
     private val inflater: LayoutInflater? = null
     private val adapter: HomeAdapter? = null
     private val pm: PackageManager? = null
+//    private val appLabelComparator: Comparator? = null
 
     fun HomeAdapter() {
         val calendar: Calendar = Calendar.getInstance()
@@ -52,18 +55,30 @@ class HomeAdapter: BaseAdapter() {
         //Sort List
     }
     override fun getCount(): Int {
-        TODO("Not yet implemented")
+        return usageStats.size
     }
 
     override fun getItem(position: Int): Any {
-        TODO("Not yet implemented")
+        return usageStats.get(position)
     }
 
     override fun getItemId(position: Int): Long {
-        TODO("Not yet implemented")
+        return position.toLong()
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        TODO("Not yet implemented")
+        var holder: AppViewHolder
+
+        if (convertView == null) {
+            convertView = inflater.inflate(R.layout.fragment_home, null)
+        }
     }
+
+    internal class AppViewHolder {
+        var pkgName: TextView? = null
+        var lastTimeUsed: TextView? = null
+        var usageTime: TextView? = null
+    }
+
+
 }
