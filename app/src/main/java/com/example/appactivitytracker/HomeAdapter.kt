@@ -25,9 +25,10 @@ class HomeAdapter: BaseAdapter() {
     private val _DISPLAY_ORDER_LAST_TIME_USED = 1
     private val _DISPLAY_ORDER_APP_NAME = 2
 
-    private var mDisplayOrder: Int = _DISPLAY_ORDER_USAGE_TIME
+    private var displayOrder: Int = _DISPLAY_ORDER_USAGE_TIME
     private val localLOGV = false
     private val usageTimeComparator: UsageTimeComparator = UsageTimeComparator()
+    private val lastTimeUsedComparator = LastTimeUsedComparator()
 
     private val appLabelMap: ArrayMap<String, String> = ArrayMap()
     private val usageStats: ArrayList<UsageStats> = ArrayList()
@@ -121,18 +122,25 @@ class HomeAdapter: BaseAdapter() {
     }
 
     fun sortList(sortOrder: Int) {
-        if (mDisplayOrder == sortOrder) {
+        if (displayOrder == sortOrder) {
             //do nothing
             return
         }
-        mDisplayOrder = sortOrder
+        displayOrder = sortOrder
         sortList()
     }
 
     private fun sortList() {
-        if (mDisplayOrder == _DISPLAY_ORDER_USAGE_TIME) {
+        if (displayOrder == _DISPLAY_ORDER_USAGE_TIME) {
             if (localLOGV) Log.i(TAG, "Sorting by usage time")
             Collections.sort(usageStats, usageTimeComparator)
+        } else if (displayOrder ==_DISPLAY_ORDER_LAST_TIME_USED) {
+            if (localLOGV) Log.i(TAG, "Sorting by last Time Used")
+            Collections.sort(usageStats, lastTimeUsedComparator)
+        } else if (displayOrder == _DISPLAY_ORDER_APP_NAME) {
+            if (localLOGV) Log.i(TAG, "Sorting by application name")
+            Collections.sort(usageStats, appLabelComparator)
         }
+        notifyDataSetChanged()
     }
 }
