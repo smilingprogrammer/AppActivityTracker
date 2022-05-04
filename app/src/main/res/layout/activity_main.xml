@@ -17,6 +17,4 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_main"/>
 
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
