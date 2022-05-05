@@ -27,3 +27,13 @@ class UsageTimeComparator : Comparator<UsageStats?> {
         return (b!!.totalTimeInForeground - a!!.totalTimeInForeground).toInt()
     }
 }
+
+//class AppNameComparator internal constructor(private val mAppLabelList: Map<String, String>) :
+//    Comparator<UsageStats?> {
+//
+//    override fun compare(a: UsageStats?, b: UsageStats?): Int {
+//        val alabel = mAppLabelList[a?.packageName]
+//        val blabel = mAppLabelList[b?.packageName]
+//        return alabel!!.compareTo(blabel!!)
+//    }
+//}
