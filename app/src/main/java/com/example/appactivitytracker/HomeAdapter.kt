@@ -1,5 +1,6 @@
 package com.example.appactivitytracker
 
+import android.annotation.SuppressLint
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.pm.ApplicationInfo
@@ -20,58 +21,17 @@ class HomeAdapter: BaseAdapter() {
 
     private val TAG = "HomeAdapter"
 
-    // Constants defining order for display order
-    private val _DISPLAY_ORDER_USAGE_TIME = 0
-    private val _DISPLAY_ORDER_LAST_TIME_USED = 1
-    private val _DISPLAY_ORDER_APP_NAME = 2
-
     private var displayOrder: Int = _DISPLAY_ORDER_USAGE_TIME
-    private val localLOGV = false
-    private val usageTimeComparator: UsageTimeComparator = UsageTimeComparator()
-    private val lastTimeUsedComparator = LastTimeUsedComparator()
+    private var localLOGV = false
+    private var usageTimeComparator: UsageTimeComparator = UsageTimeComparator()
+    private var lastTimeUsedComparator = LastTimeUsedComparator()
 
-    private val appLabelMap: ArrayMap<String, String> = ArrayMap()
-    private val usageStats: ArrayList<UsageStats> = ArrayList()
-    private val usageStatsManager: UsageStatsManager? = null
-    private val inflater: LayoutInflater? = null
-    private val adapter: HomeAdapter? = null
+    private var appLabelMap: ArrayMap<String, String> = ArrayMap()
+    private var usageStats: ArrayList<UsageStats> = ArrayList()
+    private var usageStatsManager: UsageStatsManager? = null
+    private var inflater: LayoutInflater? = null
     private val pm: PackageManager? = null
     private var appLabelComparator: AppNameComparator? = null
-
-    fun HomeAdapter() {
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -5)
-
-        val stats = usageStatsManager!!.queryUsageStats(
-            UsageStatsManager.INTERVAL_BEST,
-            calendar.timeInMillis, System.currentTimeMillis()
-        ) ?: return
-        val map = ArrayMap<String, UsageStats>()
-        val statCount = stats.size
-
-        for (i in 0 until statCount) {
-            val useStats: UsageStats = stats.get(i)
-            try {
-                val applicationInfo: ApplicationInfo = pm!!.getApplicationInfo(useStats.packageName, 0)
-                val label = applicationInfo.loadLabel(pm).toString()
-                appLabelMap.put(useStats.packageName, label)
-
-                val existingStats: UsageStats? = map.get(useStats.packageName)
-                if (existingStats == null) {
-                    map.put(useStats.packageName, useStats)
-                } else {
-                    existingStats.add(useStats)
-                }
-            } catch (e: NameNotFoundException) {
-
-            }
-        }
-        usageStats.addAll(map.values)
-        //Sort List
-
-        appLabelComparator = AppNameComparator(appLabelMap)
-        sortList()
-    }
 
     internal class AppViewHolder {
         var pkgName: TextView? = null
@@ -91,6 +51,7 @@ class HomeAdapter: BaseAdapter() {
         return position.toLong()
     }
 
+    @SuppressLint("InflateParams")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         var convertView = convertView
         var holder = AppViewHolder()
@@ -142,5 +103,47 @@ class HomeAdapter: BaseAdapter() {
             Collections.sort(usageStats, appLabelComparator)
         }
         notifyDataSetChanged()
+    }
+
+    companion object {
+        // Constants defining order for display order
+        private val _DISPLAY_ORDER_USAGE_TIME = 0
+        private val _DISPLAY_ORDER_LAST_TIME_USED = 1
+        private val _DISPLAY_ORDER_APP_NAME = 2
+    }
+
+    init {
+        val calendar: Calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -5)
+
+        val stats = usageStatsManager!!.queryUsageStats(
+            UsageStatsManager.INTERVAL_BEST,
+            calendar.timeInMillis, System.currentTimeMillis()
+        ) /*?: return*/
+        val map = ArrayMap<String, UsageStats>()
+        val statCount = stats.size
+
+        for (i in 0 until statCount) {
+            val useStats: UsageStats = stats.get(i)
+            try {
+                val applicationInfo: ApplicationInfo = pm!!.getApplicationInfo(useStats.packageName, 0)
+                val label = applicationInfo.loadLabel(pm).toString()
+                appLabelMap.put(useStats.packageName, label)
+
+                val existingStats: UsageStats? = map.get(useStats.packageName)
+                if (existingStats == null) {
+                    map.put(useStats.packageName, useStats)
+                } else {
+                    existingStats.add(useStats)
+                }
+            } catch (e: NameNotFoundException) {
+
+            }
+        }
+        usageStats.addAll(map.values)
+        //Sort List
+
+        appLabelComparator = AppNameComparator(appLabelMap)
+        sortList()
     }
 }

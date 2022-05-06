@@ -8,7 +8,7 @@ import android.provider.Settings
 
 
 lateinit var mUsageStatsManager: UsageStatsManager
-fun requestPermissions(context: Context?) {
+fun permissions(context: Context?) {
     val stats: List<UsageStats> = mUsageStatsManager
         .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis())
     val isEmpty = stats.isEmpty()
