@@ -1,11 +1,8 @@
 package com.example.appactivitytracker
 
-import android.annotation.SuppressLint
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.content.pm.PackageManager.NameNotFoundException
 import android.text.format.DateUtils
 import android.util.ArrayMap
 import android.util.Log
@@ -17,133 +14,139 @@ import android.widget.TextView
 import java.text.DateFormat
 import java.util.*
 
-class HomeAdapter: BaseAdapter() {
+class HomeAdapter : BaseAdapter() {
 
-    private val TAG = "HomeAdapter"
+    // Constants defining order for display order
+    private val _DISPLAY_ORDER_USAGE_TIME = 0
+    private val _DISPLAY_ORDER_LAST_TIME_USED = 1
+    private val _DISPLAY_ORDER_APP_NAME = 2
 
-    private var displayOrder: Int = _DISPLAY_ORDER_USAGE_TIME
-    private var localLOGV = false
-    private var usageTimeComparator: UsageTimeComparator = UsageTimeComparator()
-    private var lastTimeUsedComparator = LastTimeUsedComparator()
-
-    private var appLabelMap: ArrayMap<String, String> = ArrayMap()
-    private var usageStats: ArrayList<UsageStats> = ArrayList()
-    private var usageStatsManager: UsageStatsManager? = null
-    private var inflater: LayoutInflater? = null
-    private val pm: PackageManager? = null
-    private var appLabelComparator: AppNameComparator? = null
-
-    internal class AppViewHolder {
-        var pkgName: TextView? = null
-        var lastTimeUsed: TextView? = null
-        var usageTime: TextView? = null
-    }
+    private var mDisplayOrder = _DISPLAY_ORDER_USAGE_TIME
+    private val mLastTimeUsedComparator = LastTimeUsedComparator()
+    private val mUsageTimeComparator = UsageTimeComparator()
+    private val mAppLabelComparator: AppNameComparator
+    private var mPm: PackageManager? = null
+    private var mInflater: LayoutInflater? = null
+    private val mAppLabelMap = ArrayMap<String, String>()
+    private val mPackageStats = ArrayList<UsageStats>()
 
     override fun getCount(): Int {
-        return usageStats.size
+        return mPackageStats.size
     }
 
     override fun getItem(position: Int): Any {
-        return usageStats.get(position)
+        return mPackageStats[position]
     }
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
 
-    @SuppressLint("InflateParams")
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        // A ViewHolder keeps references to children views to avoid unneccessary calls
+        // to findViewById() on each row.
         var convertView = convertView
-        var holder = AppViewHolder()
+        val holder: AppViewHolder
 
+        // When convertView is not null, we can reuse it directly, there is no need
+        // to reinflate it. We only inflate a new View when the convertView supplied
+        // by ListView is null.
         if (convertView == null) {
-            convertView = inflater!!.inflate(R.layout.usage_stats_item, null)
+            convertView = mInflater!!.inflate(R.layout.usage_stats_item, null)
 
-            holder.pkgName = convertView.findViewById(R.id.package_name) as TextView
-            holder.lastTimeUsed = convertView.findViewById(R.id.last_time_used) as TextView
-            holder.usageTime = convertView.findViewById(R.id.usage_time) as TextView
-            convertView.setTag(holder)
+            // Creates a ViewHolder and store references to the two children views
+            // we want to bind data to.
+            holder = AppViewHolder()
+            holder.pkgName = convertView.findViewById<View>(R.id.package_name) as TextView
+            holder.lastTimeUsed =
+                convertView.findViewById<View>(R.id.last_time_used) as TextView
+            holder.usageTime = convertView.findViewById<View>(R.id.usage_time) as TextView
+            convertView.tag = holder
         } else {
             // Get the ViewHolder back to get fast access to the TextView
             // and the ImageView.
             holder = convertView.tag as AppViewHolder
         }
 
-        val useStats2: UsageStats = usageStats.get(position)
-        if (usageStats != null) {
-            val label = appLabelMap.get(useStats2.packageName)
-            holder.pkgName?.setText(label)
-            holder.lastTimeUsed?.setText(DateUtils.formatSameDayTime(useStats2.lastTimeUsed,
-                System.currentTimeMillis(), DateFormat.MEDIUM, DateFormat.MEDIUM))
-            holder.usageTime?.setText(DateUtils.formatElapsedTime(useStats2.totalTimeInForeground / 1000))
+        // Bind the data efficiently with the holder
+        val pkgStats = mPackageStats[position]
+        if (pkgStats != null) {
+            val label = mAppLabelMap[pkgStats.packageName]
+            holder.pkgName!!.text = label
+            holder.lastTimeUsed!!.text = DateUtils.formatSameDayTime(
+                pkgStats.lastTimeUsed,
+                System.currentTimeMillis(), DateFormat.MEDIUM, DateFormat.MEDIUM
+            )
+            holder.usageTime!!.text =
+                DateUtils.formatElapsedTime(pkgStats.totalTimeInForeground / 1000)
         } else {
-            Log.w(TAG, "No Usage stats info for package:$position")
+            Log.w(
+                TAG,
+                "No usage stats info for package:$position"
+            )
         }
         return convertView!!
     }
 
     fun sortList(sortOrder: Int) {
-        if (displayOrder == sortOrder) {
-            //do nothing
+        if (mDisplayOrder == sortOrder) {
+            // do nothing
             return
         }
-        displayOrder = sortOrder
+        mDisplayOrder = sortOrder
         sortList()
     }
 
     private fun sortList() {
-        if (displayOrder == _DISPLAY_ORDER_USAGE_TIME) {
+        if (mDisplayOrder == _DISPLAY_ORDER_USAGE_TIME) {
             if (localLOGV) Log.i(TAG, "Sorting by usage time")
-            Collections.sort(usageStats, usageTimeComparator)
-        } else if (displayOrder ==_DISPLAY_ORDER_LAST_TIME_USED) {
-            if (localLOGV) Log.i(TAG, "Sorting by last Time Used")
-            Collections.sort(usageStats, lastTimeUsedComparator)
-        } else if (displayOrder == _DISPLAY_ORDER_APP_NAME) {
+            Collections.sort(mPackageStats, mUsageTimeComparator)
+        } else if (mDisplayOrder == _DISPLAY_ORDER_LAST_TIME_USED) {
+            if (localLOGV) Log.i(TAG, "Sorting by last time used")
+            Collections.sort(mPackageStats, mLastTimeUsedComparator)
+        } else if (mDisplayOrder == _DISPLAY_ORDER_APP_NAME) {
             if (localLOGV) Log.i(TAG, "Sorting by application name")
-            Collections.sort(usageStats, appLabelComparator)
+            Collections.sort(mPackageStats, mAppLabelComparator)
         }
         notifyDataSetChanged()
     }
 
-    companion object {
-        // Constants defining order for display order
-        private val _DISPLAY_ORDER_USAGE_TIME = 0
-        private val _DISPLAY_ORDER_LAST_TIME_USED = 1
-        private val _DISPLAY_ORDER_APP_NAME = 2
-    }
-
     init {
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -5)
-
-        val stats = usageStatsManager!!.queryUsageStats(
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.DAY_OF_YEAR, -5)
+        val stats = mUsageStatsManager!!.queryUsageStats(
             UsageStatsManager.INTERVAL_BEST,
-            calendar.timeInMillis, System.currentTimeMillis()
-        ) /*?: return*/
+            cal.timeInMillis, System.currentTimeMillis()
+        )
         val map = ArrayMap<String, UsageStats>()
-        val statCount = stats.size
-
+        val statCount = stats!!.size
         for (i in 0 until statCount) {
-            val useStats: UsageStats = stats.get(i)
+            val pkgStats = stats[i]
+
+            // load application labels for each application
             try {
-                val applicationInfo: ApplicationInfo = pm!!.getApplicationInfo(useStats.packageName, 0)
-                val label = applicationInfo.loadLabel(pm).toString()
-                appLabelMap.put(useStats.packageName, label)
-
-                val existingStats: UsageStats? = map.get(useStats.packageName)
+                val appInfo = mPm!!.getApplicationInfo(pkgStats.packageName, 0)
+                val label = appInfo.loadLabel(mPm!!).toString()
+                mAppLabelMap[pkgStats.packageName] = label
+                val existingStats = map[pkgStats.packageName]
                 if (existingStats == null) {
-                    map.put(useStats.packageName, useStats)
+                    map[pkgStats.packageName] = pkgStats
                 } else {
-                    existingStats.add(useStats)
+                    existingStats.add(pkgStats)
                 }
-            } catch (e: NameNotFoundException) {
-
+            } catch (e: PackageManager.NameNotFoundException) {
+                // This package may be gone.
             }
         }
-        usageStats.addAll(map.values)
-        //Sort List
+        mPackageStats.addAll(map.values)
 
-        appLabelComparator = AppNameComparator(appLabelMap)
+        // Sort list
+        mAppLabelComparator = AppNameComparator(mAppLabelMap)
         sortList()
+    }
+
+    companion object {
+        private const val TAG = "UsageStatsActivity"
+        private const val localLOGV = false
     }
 }

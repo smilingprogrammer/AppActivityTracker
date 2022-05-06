@@ -19,41 +19,34 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity(), OnItemSelectedListener {
 
-    private var usageStatsManager: UsageStatsManager? = null
-    private var inflater: LayoutInflater? = null
-    private var pm: PackageManager? = null
-//    private lateinit var homeAdapter: HomeAdapter
-    private var homeAdapter: HomeAdapter? = null
+    private var mUsageStatsManager: UsageStatsManager? = null
+    private var mInflater: LayoutInflater? = null
+    private var mAdapter: HomeAdapter? = null
+    private var mPm: PackageManager? = null
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreate(icicle: Bundle?) {
+        super.onCreate(icicle)
         setContentView(R.layout.activity_main)
-
-        usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager?
-        requestPermissions()
-        inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater?
-        pm = packageManager
-
-        val typeSpinner = findViewById<Spinner>(R.id.typeSpinner)
+        mUsageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
+        mInflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        mPm = packageManager
+        val typeSpinner = findViewById<View>(R.id.typeSpinner) as Spinner
         typeSpinner.onItemSelectedListener = this
-
-        val listView = findViewById<ListView>(R.id.pkg_list)
-//        homeAdapter = HomeAdapter()
-        listView.adapter = homeAdapter
-
+        val listView = findViewById<View>(R.id.pkg_list) as ListView
+        mAdapter = HomeAdapter()
+        listView.adapter = mAdapter
     }
 
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        homeAdapter?.sortList(position)
+    override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+        mAdapter!!.sortList(position)
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
-        //Do Nothing
+        // do nothing
     }
 
     private fun requestPermissions() {
-        val stats = usageStatsManager!!
+        val stats = mUsageStatsManager!!
             .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis())
         val isEmpty = stats.isEmpty()
         if (isEmpty) {
