@@ -2,6 +2,7 @@ package com.example.appactivitytracker
 
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
+import android.content.Context.USAGE_STATS_SERVICE
 import android.content.pm.PackageManager
 import android.text.format.DateUtils
 import android.util.ArrayMap
@@ -11,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import androidx.core.content.ContextCompat.getSystemService
 import java.text.DateFormat
 import java.util.*
 
@@ -21,6 +23,7 @@ class HomeAdapter : BaseAdapter() {
     private val _DISPLAY_ORDER_LAST_TIME_USED = 1
     private val _DISPLAY_ORDER_APP_NAME = 2
 
+//    private var mUsageStatsManager: UsageStatsManager? = null
     private var mDisplayOrder = _DISPLAY_ORDER_USAGE_TIME
     private val mLastTimeUsedComparator = LastTimeUsedComparator()
     private val mUsageTimeComparator = UsageTimeComparator()
@@ -29,6 +32,7 @@ class HomeAdapter : BaseAdapter() {
     private var mInflater: LayoutInflater? = null
     private val mAppLabelMap = ArrayMap<String, String>()
     private val mPackageStats = ArrayList<UsageStats>()
+    val mUsageStatsManager: UsageStatsManager? = null
 
     override fun getCount(): Int {
         return mPackageStats.size

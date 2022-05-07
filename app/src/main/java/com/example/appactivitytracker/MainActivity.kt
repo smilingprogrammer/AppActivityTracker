@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity(), OnItemSelectedListener {
     override fun onCreate(icicle: Bundle?) {
         super.onCreate(icicle)
         setContentView(R.layout.activity_main)
+
         mUsageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
         mInflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         mPm = packageManager

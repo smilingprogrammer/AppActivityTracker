@@ -7,13 +7,13 @@ import android.content.Intent
 import android.provider.Settings
 
 
-lateinit var mUsageStatsManager: UsageStatsManager
-fun permissions(context: Context?) {
-    val stats: List<UsageStats> = mUsageStatsManager
-        .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis())
-    val isEmpty = stats.isEmpty()
-    if (isEmpty) {
-        val intent = Intent(context, Settings.ACTION_USAGE_ACCESS_SETTINGS::class.java)
-        context?.startActivity(intent)
-    }
-}
+//lateinit var mUsageStatsManager: UsageStatsManager
+//fun permissions(context: Context?) {
+//    val stats: List<UsageStats> = mUsageStatsManager
+//        .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis())
+//    val isEmpty = stats.isEmpty()
+//    if (isEmpty) {
+//        val intent = Intent(context, Settings.ACTION_USAGE_ACCESS_SETTINGS::class.java)
+//        context?.startActivity(intent)
+//    }
+//}
